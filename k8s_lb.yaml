@@ -1,0 +1,29 @@
+# Load balancer: decides WHICH Kubernetes namespace (and node pool) a Spark job lands in.
+# strategy: weighted_random  -> pick by weight
+#           least_loaded     -> pick the namespace with fewest running drivers per weight
+# max_running_jobs: skip a namespace that already runs this many Spark drivers (0 = no limit)
+strategy: least_loaded
+targets:
+  - name: spark-a
+    master: k8s://https://kubernetes.default.svc
+    namespace: spark-a
+    weight: 60
+    max_running_jobs: 20
+    enabled: true
+    allowed_sizes: [XS, S, M, L, XL]
+    node_selector: {pool: spark-compute}
+  - name: spark-b
+    master: k8s://https://kubernetes.default.svc
+    namespace: spark-b
+    weight: 40
+    max_running_jobs: 12
+    enabled: true
+    allowed_sizes: [XS, S, M, L]
+    node_selector: {pool: spark-compute}
+  - name: spark-c
+    master: k8s://https://kubernetes.default.svc
+    namespace: spark-c
+    weight: 0
+    max_running_jobs: 0
+    enabled: false              # false = drained for maintenance
+    allowed_sizes: [XS, S]
